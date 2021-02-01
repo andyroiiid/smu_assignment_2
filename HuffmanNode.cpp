@@ -46,11 +46,11 @@ HuffmanNode::UniquePtr HuffmanNode::generateHuffmanTree(const ByteFrequencies &f
 }
 
 void HuffmanNode::printTree(int indent) const {
-    printWithIndent(indent);
     if (byte == -1) {
         left->printTree(indent + 1);
         right->printTree(indent + 1);
     }
+    printWithIndent(indent);
 }
 
 void HuffmanNode::serialize(std::vector<short> &serialized) const {
@@ -73,7 +73,7 @@ HuffmanNode::UniquePtr HuffmanNode::deserializeFromFile(std::ifstream &file) {
     for (int i = 0; i < treeSize; i++) {
         short node;
         file.read(reinterpret_cast<char *>(&node), sizeof(node));
-        if (node > 0) {
+        if (node >= 0) {
             // if you read a leaf, put it on a stack
             nodeStack.push_back(std::make_unique<HuffmanNode>(node, 0.0));
         } else {
@@ -84,7 +84,8 @@ HuffmanNode::UniquePtr HuffmanNode::deserializeFromFile(std::ifstream &file) {
             auto left = std::move(nodeStack.back());
             nodeStack.pop_back();
             // and put the node back on
-            nodeStack.push_back(std::make_unique<HuffmanNode>(std::move(left), std::move(right)));
+            auto combined = std::make_unique<HuffmanNode>(std::move(left), std::move(right));
+            nodeStack.push_back(std::move(combined));
         }
     }
     return std::move(nodeStack.front());
