@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <cmath>
 
 // read binary file into std::string
 std::string readFile(const std::string &filename) {
