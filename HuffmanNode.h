@@ -32,15 +32,7 @@ public:
         generateEncodings(pathStack, encodings);
     }
 
-    void serialize(std::vector<short> &serialized) {
-        if (byte == -1) {
-            left->serialize(serialized);
-            right->serialize(serialized);
-            serialized.push_back(-1);
-        } else {
-            serialized.push_back(byte);
-        }
-    }
+    void serialize(std::vector<short> &serialized);
 
 private:
     void generateEncodings(std::vector<int> &pathStack, Encodings &encodings) const;

@@ -6,21 +6,6 @@
 
 #include <algorithm>
 
-void HuffmanNode::generateEncodings(std::vector<int> &pathStack, HuffmanNode::Encodings &encodings) const {
-    if (byte >= 0) {
-        // leaf node
-        encodings[byte] = pathStack;
-    } else {
-        pathStack.push_back(0);
-        left->generateEncodings(pathStack, encodings);
-        pathStack.pop_back();
-
-        pathStack.push_back(1);
-        right->generateEncodings(pathStack, encodings);
-        pathStack.pop_back();
-    }
-}
-
 HuffmanNode::UniquePtr HuffmanNode::generateHuffmanTree(const ByteFrequencies &frequencies) {
     // comparator for std::make_heap, std::push_heap and std::pop_heap
     static auto compare = [](const HuffmanNode::UniquePtr &lhs, const HuffmanNode::UniquePtr &rhs) {
@@ -57,4 +42,30 @@ HuffmanNode::UniquePtr HuffmanNode::generateHuffmanTree(const ByteFrequencies &f
 
     // move the tree out of the vector so that it won't be freed when the vector destructs
     return std::move(nodes.front());
+}
+
+void HuffmanNode::serialize(std::vector<short> &serialized) {
+    // depth-first, post order serialization
+    if (byte == -1) {
+        left->serialize(serialized);
+        right->serialize(serialized);
+        serialized.push_back(-1);
+    } else {
+        serialized.push_back(byte);
+    }
+}
+
+void HuffmanNode::generateEncodings(std::vector<int> &pathStack, HuffmanNode::Encodings &encodings) const {
+    if (byte >= 0) {
+        // leaf node
+        encodings[byte] = pathStack;
+    } else {
+        pathStack.push_back(0);
+        left->generateEncodings(pathStack, encodings);
+        pathStack.pop_back();
+
+        pathStack.push_back(1);
+        right->generateEncodings(pathStack, encodings);
+        pathStack.pop_back();
+    }
 }

@@ -17,6 +17,8 @@ public:
     explicit ByteFrequencies(const std::string &bytes);
 
     void print() const;
+
+    [[nodiscard]] double calcEntropy() const;
 };
 
 #endif //SMU_ASSIGNMENT_2_UTILS_H

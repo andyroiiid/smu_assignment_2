@@ -38,3 +38,15 @@ void ByteFrequencies::print() const {
     }
     printf("sum\t%f\n", sum);
 }
+
+// calculate entropy
+// H = -sum(p * log2(p))
+double ByteFrequencies::calcEntropy() const {
+    double entropy = 0.0;
+    for (auto frequency : *this) {
+        if (frequency > 0) {
+            entropy -= frequency * log2(frequency);
+        }
+    }
+    return entropy;
+}

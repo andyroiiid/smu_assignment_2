@@ -1,49 +1,61 @@
 #include <fstream>
-#include <cmath>
 
 #include "Utils.h"
 #include "HuffmanNode.h"
 
+/* COMPRESSED FILE BINARY LAYOUT
+ * size_t treeSize;
+ * short treeNodes[treeSize];
+ * size_t numBits;
+ * int words[bitToWordCeil(numBits)];
+ * */
+
 size_t encode(const std::string &bytes, const HuffmanNode::Encodings &encodings, std::vector<int> &output) {
     size_t numBits = 0;
-    int i = 0;
-    int word = 0;
-    static constexpr int wordSize = sizeof(word) * 8;
+
+    int buffer = 0; // buffer for combining bits into words
+    int i = 0; // current bit index in the buffer
+    static constexpr int bufferSizeInBits = sizeof(buffer) * 8;
+
     for (unsigned char b : bytes) {
         const auto &encoding = encodings[b];
         numBits += encoding.size();
         for (int bit : encoding) {
-            word |= bit << i++;
-            if (i == wordSize) {
-                output.push_back(word);
+            // fill the buffer with bits
+            buffer |= bit << i++;
+
+            if (i == bufferSizeInBits) {
+                // when the buffer is filled with bits, append the buffer to output
+                output.push_back(buffer);
+
+                // clear the buffer
+                buffer = 0;
                 i = 0;
-                word = 0;
             }
         }
     }
-    output.push_back(word);
+    if (i > 0) {
+        // append the remaining bits
+        output.push_back(buffer);
+    }
+
     return numBits;
 }
 
-int main() {
+void compress(const std::string &inputFilename, const std::string &outputFilename) {
     // Loading a file into memory
-    const std::string bytes = readFile("D:\\aseprite\\aseprite.exe");
+    const std::string bytes = readFile(inputFilename);
 
     if (bytes.empty()) {
-        fprintf(stderr, "empty input file");
-        return -1;
+        fprintf(stderr, "input file is empty / not exists");
+        return;
     }
 
     // counting the frequency of occurrence of each byte
     const ByteFrequencies frequencies(bytes);
-    // frequencies.print();
 
     // calculate entropy
-    // H = -sum(p * log2(p))
-    double entropy = 0.0;
-    for (auto frequency : frequencies) {
-        entropy -= frequency * log2(frequency);
-    }
+    double entropy = frequencies.calcEntropy();
     printf("input entropy = %f bits\n", entropy);
 
     // estimate compression ratio and compressed size
@@ -54,7 +66,7 @@ int main() {
     auto huffmanTree = HuffmanNode::generateHuffmanTree(frequencies);
 
     // open output file
-    std::ofstream file("out", std::ios::binary);
+    std::ofstream file(outputFilename, std::ios::binary);
 
     // get tree serialization
     std::vector<short> serialized;
@@ -88,7 +100,43 @@ int main() {
 //    for (int word : words) {
 //        printf("%08X ", word);
 //    }
-//    putchar('\n');
+//    printf("\n");
+}
+
+void decompress(const std::string &filename) {
+    std::ifstream file(filename, std::ios::binary);
+
+    size_t treeSize;
+    file.read(reinterpret_cast<char *>(&treeSize), sizeof(treeSize));
+    printf("treeSize = %llu\n", treeSize);
+
+    for (int i = 0; i < treeSize; i++) {
+        short node;
+        file.read(reinterpret_cast<char *>(&node), sizeof(node));
+        printf("%d\n", node);
+    }
+
+    size_t numBits;
+    file.read(reinterpret_cast<char *>(&numBits), sizeof(numBits));
+    printf("numBits = %llu\n", numBits);
+
+    size_t wordSize = numBits / 32 + (numBits % 32 ? 1 : 0);
+    printf("wordSize = %llu\n", wordSize);
+
+    std::vector<int> words;
+    words.resize(wordSize);
+    file.read(reinterpret_cast<char *>(words.data()), wordSize * sizeof(int));
+
+    for (int word : words) {
+        printf("%08X ", word);
+    }
+    printf("\n");
+}
+
+int main() {
+    compress("test.txt", "out");
+
+    decompress("out");
 
     return 0;
 }
