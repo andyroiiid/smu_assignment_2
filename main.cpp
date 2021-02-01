@@ -43,7 +43,7 @@ size_t encode(const std::string &bytes, const HuffmanNode::Encodings &encodings,
 }
 
 void compress(const std::string &inputFilename, const std::string &outputFilename) {
-    // Loading a file into memory
+    // loading a file into memory
     const std::string bytes = readFile(inputFilename);
 
     if (bytes.empty()) {
@@ -64,6 +64,7 @@ void compress(const std::string &inputFilename, const std::string &outputFilenam
 
     // generate the Huffman tree
     auto huffmanTree = HuffmanNode::generateHuffmanTree(frequencies);
+    huffmanTree->printTree();
 
     // open output file
     std::ofstream file(outputFilename, std::ios::binary);
@@ -104,17 +105,12 @@ void compress(const std::string &inputFilename, const std::string &outputFilenam
 }
 
 void decompress(const std::string &filename) {
+    // open compressed file
     std::ifstream file(filename, std::ios::binary);
 
-    size_t treeSize;
-    file.read(reinterpret_cast<char *>(&treeSize), sizeof(treeSize));
-    printf("treeSize = %llu\n", treeSize);
-
-    for (int i = 0; i < treeSize; i++) {
-        short node;
-        file.read(reinterpret_cast<char *>(&node), sizeof(node));
-        printf("%d\n", node);
-    }
+    // load the Huffman tree from file
+    auto huffmanTree = HuffmanNode::deserializeFromFile(file);
+    huffmanTree->printTree();
 
     size_t numBits;
     file.read(reinterpret_cast<char *>(&numBits), sizeof(numBits));

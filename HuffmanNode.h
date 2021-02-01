@@ -32,9 +32,15 @@ public:
         generateEncodings(pathStack, encodings);
     }
 
-    void serialize(std::vector<short> &serialized);
+    void printTree(int indent = 0) const;
+
+    void serialize(std::vector<short> &serialized) const;
+
+    static UniquePtr deserializeFromFile(std::ifstream &file);
 
 private:
+    void printWithIndent(int indent) const;
+
     void generateEncodings(std::vector<int> &pathStack, Encodings &encodings) const;
 
     int byte = 0;

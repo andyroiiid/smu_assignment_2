@@ -5,6 +5,7 @@
 #include "HuffmanNode.h"
 
 #include <algorithm>
+#include <fstream>
 
 HuffmanNode::UniquePtr HuffmanNode::generateHuffmanTree(const ByteFrequencies &frequencies) {
     // comparator for std::make_heap, std::push_heap and std::pop_heap
@@ -44,7 +45,15 @@ HuffmanNode::UniquePtr HuffmanNode::generateHuffmanTree(const ByteFrequencies &f
     return std::move(nodes.front());
 }
 
-void HuffmanNode::serialize(std::vector<short> &serialized) {
+void HuffmanNode::printTree(int indent) const {
+    printWithIndent(indent);
+    if (byte == -1) {
+        left->printTree(indent + 1);
+        right->printTree(indent + 1);
+    }
+}
+
+void HuffmanNode::serialize(std::vector<short> &serialized) const {
     // depth-first, post order serialization
     if (byte == -1) {
         left->serialize(serialized);
@@ -53,6 +62,38 @@ void HuffmanNode::serialize(std::vector<short> &serialized) {
     } else {
         serialized.push_back(byte);
     }
+}
+
+HuffmanNode::UniquePtr HuffmanNode::deserializeFromFile(std::ifstream &file) {
+    // read tree nodes
+    size_t treeSize;
+    file.read(reinterpret_cast<char *>(&treeSize), sizeof(treeSize));
+
+    std::vector<HuffmanNode::UniquePtr> nodeStack;
+    for (int i = 0; i < treeSize; i++) {
+        short node;
+        file.read(reinterpret_cast<char *>(&node), sizeof(node));
+        if (node > 0) {
+            // if you read a leaf, put it on a stack
+            nodeStack.push_back(std::make_unique<HuffmanNode>(node, 0.0));
+        } else {
+            // if you read a node take 2 children from the stack
+            // (the right child node is pushed to stack first)
+            auto right = std::move(nodeStack.back());
+            nodeStack.pop_back();
+            auto left = std::move(nodeStack.back());
+            nodeStack.pop_back();
+            // and put the node back on
+            nodeStack.push_back(std::make_unique<HuffmanNode>(std::move(left), std::move(right)));
+        }
+    }
+    return std::move(nodeStack.front());
+}
+
+void HuffmanNode::printWithIndent(int indent) const {
+    for (int i = 0; i < indent; i++)
+        putchar(' ');
+    printf("%d\n", byte);
 }
 
 void HuffmanNode::generateEncodings(std::vector<int> &pathStack, HuffmanNode::Encodings &encodings) const {
