@@ -27,7 +27,7 @@ HuffmanNode::UniquePtr HuffmanNode::generateHuffmanTree(const ByteFrequencies &f
         return lhs->frequency > rhs->frequency;
     };
 
-    // makeUnique leaf nodes for each byte that has a frequency > 0
+    // create leaf nodes for each byte that has a frequency > 0
     std::vector<HuffmanNode::UniquePtr> nodes;
     nodes.reserve(ByteTotalNum);
     for (int i = 0; i < ByteTotalNum; ++i) {
@@ -49,7 +49,7 @@ HuffmanNode::UniquePtr HuffmanNode::generateHuffmanTree(const ByteFrequencies &f
         auto min2 = std::move(nodes.back());
         nodes.pop_back();
 
-        // Create a new node
+        // combine
         auto combined = std::make_unique<HuffmanNode>(std::move(min1), std::move(min2));
         nodes.push_back(std::move(combined));
         std::push_heap(nodes.begin(), nodes.end(), compare);
