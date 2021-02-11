@@ -10,6 +10,9 @@
  * int words[bitToWordCeil(numBits)];
  * */
 
+/*
+ * encode bytes into a vector of int with given encoding
+ */
 size_t encode(const std::string &bytes, const HuffmanNode::Encodings &encodings, std::vector<int> &output) {
     size_t numBits = 0;
 
@@ -42,6 +45,9 @@ size_t encode(const std::string &bytes, const HuffmanNode::Encodings &encodings,
     return numBits;
 }
 
+/*
+ * compress procedure
+ */
 void compress(const std::string &inputFilename, const std::string &outputFilename) {
     // loading a file into memory
     const std::string bytes = readFile(inputFilename);
@@ -53,6 +59,7 @@ void compress(const std::string &inputFilename, const std::string &outputFilenam
 
     // counting the frequency of occurrence of each byte
     const ByteFrequencies frequencies(bytes);
+//    frequencies.print();
 
     // calculate entropy
     double entropy = frequencies.calcEntropy();
@@ -98,6 +105,9 @@ void compress(const std::string &inputFilename, const std::string &outputFilenam
     printf("final compressed size (data section only) = %llu bits = %f bytes\n", numBits, numBits / 8.0);
 }
 
+/*
+ * decompress procedure
+ */
 void decompress(const std::string &inputFilename, const std::string &outputFilename) {
     // open compressed inputFile
     std::ifstream inputFile(inputFilename, std::ios::binary);
@@ -157,12 +167,18 @@ void decompress(const std::string &inputFilename, const std::string &outputFilen
     }
 }
 
+/*
+ * prints out the usage
+ */
 void printHelp() {
     printf("usage:\n"
            "compress:\t<executable name> c <input file> <output file>\n"
            "decompress:\t<executable name> d <input file> <output file>\n");
 }
 
+/*
+ * the main function
+ */
 int main(int argc, const char *argv[]) {
     if (argc == 4) {
         if (strcmp(argv[1], "c") == 0) {

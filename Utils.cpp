@@ -8,7 +8,6 @@
 #include <sstream>
 #include <cmath>
 
-// read binary file into std::string
 std::string readFile(const std::string &filename) {
     std::ifstream f(filename, std::ios::binary);
     std::stringstream ss;
@@ -40,8 +39,7 @@ void ByteFrequencies::print() const {
     printf("sum\t%f\n", sum);
 }
 
-// calculate entropy
-// H = -sum(p * log2(p))
+
 double ByteFrequencies::calcEntropy() const {
     double entropy = 0.0;
     for (auto frequency : *this) {
