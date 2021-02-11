@@ -10,7 +10,7 @@
 
 std::string readFile(const std::string &filename);
 
-static constexpr size_t ByteTotalNum = UCHAR_MAX + 1;
+static constexpr size_t ByteTotalNum = std::numeric_limits<unsigned char>::max() + 1;
 
 class ByteFrequencies : public std::array<double, ByteTotalNum> {
 public:

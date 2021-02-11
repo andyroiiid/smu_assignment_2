@@ -59,7 +59,7 @@ void compress(const std::string &inputFilename, const std::string &outputFilenam
     printf("input entropy = %f bits\n", entropy);
 
     if (entropy == 0) {
-        fprintf(stderr, "input file has a zero entropy (all bytes are the same)");
+        fprintf(stderr, "input file has a zero entropy (all bytes are the same)\n");
         return;
     }
 
@@ -117,6 +117,7 @@ void decompress(const std::string &inputFilename, const std::string &outputFilen
     std::ofstream outputFile(outputFilename, std::ios::binary);
     const HuffmanNode *currentNode = huffmanTree.get();
     size_t iBit = 1;
+    size_t bytesDecompressed = 0;
     for (size_t iWord = 0; iWord < wordSize; iWord++) {
         // read a compressed word
         int word;
@@ -132,20 +133,37 @@ void decompress(const std::string &inputFilename, const std::string &outputFilen
                 // leaf node -> output
                 outputFile.write(reinterpret_cast<const char *>(&byte), 1);
                 currentNode = huffmanTree.get();
+                bytesDecompressed++;
             }
 
             if (++iBit > numBits) {
                 // finished decompressing all bits
+                printf("%llu bytes decompressed\n", bytesDecompressed);
                 return;
             }
         }
     }
 }
 
-int main() {
-    compress("smu_assignment_2.exe", "out");
+void printHelp() {
+    printf("usage:\n"
+           "compress:\t<executable name> c <input file> <output file>\n"
+           "decompress:\t<executable name> d <input file> <output file>\n");
+}
 
-    decompress("out", "decompressed");
+int main(int argc, const char *argv[]) {
+    if (argc == 4) {
+        if (strcmp(argv[1], "c") == 0) {
+            printf("compress %s to %s\n", argv[2], argv[3]);
+            compress(argv[2], argv[3]);
+            return 0;
+        } else if (strcmp(argv[1], "d") == 0) {
+            printf("decompress %s to %s\n", argv[2], argv[3]);
+            decompress(argv[2], argv[3]);
+            return 0;
+        }
+    }
 
-    return 0;
+    printHelp();
+    return -1;
 }
