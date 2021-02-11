@@ -79,13 +79,17 @@ HuffmanNode::UniquePtr HuffmanNode::deserializeFromFile(std::ifstream &file) {
         } else {
             // if you read a node take 2 children from the stack
             // (the right child node is pushed to stack first)
+#define STACK_CHECK if (nodeStack.empty()) { return nullptr; }
+            STACK_CHECK
             auto right = std::move(nodeStack.back());
             nodeStack.pop_back();
+            STACK_CHECK
             auto left = std::move(nodeStack.back());
             nodeStack.pop_back();
             // and put the node back on
             auto combined = std::make_unique<HuffmanNode>(std::move(left), std::move(right));
             nodeStack.push_back(std::move(combined));
+#undef STACK_CHECK
         }
     }
     return std::move(nodeStack.front());

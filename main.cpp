@@ -104,11 +104,19 @@ void decompress(const std::string &inputFilename, const std::string &outputFilen
 
     // load the Huffman tree from inputFile
     auto huffmanTree = HuffmanNode::deserializeFromFile(inputFile);
+    if (huffmanTree == nullptr) {
+        fprintf(stderr, "failed to deserialize huffman tree\n");
+        return;
+    }
 //    huffmanTree->printTree();
 
     // read the compressed bits number
     size_t numBits;
     inputFile.read(reinterpret_cast<char *>(&numBits), sizeof(numBits));
+    if (!inputFile) {
+        fprintf(stderr, "failed to read compressed data size");
+        return;
+    }
 
     // calculate the compressed data size
     size_t wordSize = numBits / 32 + (numBits % 32 ? 1 : 0);
@@ -122,6 +130,10 @@ void decompress(const std::string &inputFilename, const std::string &outputFilen
         // read a compressed word
         int word;
         inputFile.read(reinterpret_cast<char *>(&word), sizeof(word));
+        if (!inputFile) {
+            fprintf(stderr, "compressed data is incomplete");
+            return;
+        }
 
         for (int i = 0; i < sizeof(word) * 8; i++) {
             // walk the Huffman tree
